@@ -1,0 +1,5 @@
+make buttons and inputs that trigger the /video endpoint
+
+create video route in server
+  * cleanup
+  * starts transcoding
