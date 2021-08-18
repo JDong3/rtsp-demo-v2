@@ -7,9 +7,6 @@ import {
 } from '@material-ui/core'
 import clsx from 'clsx'
 import {
-  host,
-} from './config.js'
-import {
   useEffect,
   useState,
 } from 'react'
@@ -59,6 +56,14 @@ const App = () => {
   const [instancesField, setInstancesField] = useState('')
   const [urlField, setUrlField] = useState('')
 
+  const setTimeoutp = (time) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true)
+      }, time)
+    })
+  }
+
   const handleLoad = (event) => {
     /**
      * when load is pressed, the server starts transcoding stuff, the instances variable is also set
@@ -66,18 +71,47 @@ const App = () => {
     const trigger = async () => {
       let body = {
         url: urlField,
-        why: '123',
       }
-      let data = await fetch('/load', {
+      await fetch('/load', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body),
       })
+      console.log('loaded')
     }
 
-    trigger()
+    const pollVideo = async () => {
+      while (true) {
+        await setTimeoutp(1000)
+        let data = await fetch('/videoReady')
+        data = await data.json()
+        if (data.isReady === true) {
+          break
+        }
+      }
 
+      if (Hls.isSupported()) {
+        var videos = document.getElementById('videos').childNodes;
+
+        videos.forEach(video => {
+          var hls = new Hls()
+          hls.attachMedia(video)
+          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+            hls.loadSource('/video')
+            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            })
+          })
+        })
+      }
+
+
+
+    }
+    console.log('clicked hello')
+    trigger()
     setInstances(parseInt(instancesField))
+    pollVideo()
+
   }
 
   const handleInstancesField = (event) => {
@@ -89,17 +123,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (Hls.isSupported()) {
-      var video = document.getElementById('video');
-      var hls = new Hls()
 
-      hls.attachMedia(video)
-      hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-        hls.loadSource('/video')
-        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-        })
-      })
-    }
   }, [])
 
   const renderVideos = () => {
