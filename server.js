@@ -71,13 +71,16 @@ app.post('/load', (req, res) => {
     // mkdir
     await fs.mkdir(path.join(__dirname, '/video'))
 
-
-    // let ffmpeg = spawn(`ffmpeg`)
     ffmpeg = spawn('ffmpeg', [
-      '-i', `${req.body.url}`, '-y', '-s', '480x270',
-        '-c:v', 'libx264', '-b:v', '80000', '-hls_time', '5',
-        '-hls_list_size', '5', '-start_number', '1',
-         `${path.join(__dirname, '/video/playlist.m3u8')}`
+      '-i', `${req.body.url}`,
+      '-y',
+      '-s', '480x270',
+      '-c:v', 'libx264',
+      '-b:v', '80000',
+      '-hls_time', '5',
+      '-hls_list_size', '5',
+      '-start_number', '1',
+      `${path.join(__dirname, '/video/playlist.m3u8')}`
     ])
 
     ffmpeg.stdout.on('data', (data) => {
