@@ -80,7 +80,8 @@ app.post('/load', (req, res) => {
       '-hls_time', '5',
       '-hls_list_size', '5',
       '-start_number', '1',
-      `${path.join(__dirname, '/video/playlist.m3u8')}`
+      '-strict', '-2',
+      `${path.join(__dirname, '/video/playlist.m3u8')}`,
     ])
 
     ffmpeg.stdout.on('data', (data) => {
