@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "express": "^4.17.1",
+    "get-video-duration": "^4.0.0",
     "rimraf": "^3.0.2"
   }
 }

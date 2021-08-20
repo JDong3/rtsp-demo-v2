@@ -2,6 +2,7 @@ const fs = require('fs').promises
 const path = require('path')
 const util = require('util')
 const exec = util.promisify(require('child_process').exec)
+const getVideoDurationInSeconds = require('get-video-duration').getVideoDurationInSeconds
 
 const setTimeoutp = (time) => {
   return new Promise((resolve) => {
@@ -27,7 +28,8 @@ const streamBuilder = async () => {
 
   let index = 0
   let options = {flag: 'a+'}
-
+  let dur = 0
+  let last = 0
 
   while (true) {
     let contents = ''
@@ -35,17 +37,17 @@ const streamBuilder = async () => {
 
     try {
       await fs.stat(`${nextChunk}.mp4`)
+      last = dur
+      dur += await getVideoDurationInSeconds(`${nextChunk}.mp4`) - last
       await exec(`ffmpeg -i ${nextChunk}.mp4 -c:v libx264 -c:a aac -b:a 160k -bsf:v h264_mp4toannexb -f mpegts -crf 32 ${nextChunk}.ts`)
 
-
-
       if (index === 0) {
-        contents += '#EXTM3U\n' + '#EXT-X-VERSION:3\n' + '#EXT-X-TARGETDURATION:30\n'
+        contents += '#EXTM3U\n' + '#EXT-X-VERSION:3\n' + '#EXT-X-TARGETDURATION:100\n'
       }
       if (index >= 1) {
         contents += '#EXT-X-DISCONTINUITY\n'
       }
-      contents +=  '#EXTINF:5,\n' + `chunk_${index}.ts\n`
+      contents +=  `#EXTINF:${dur-last},\n` + `chunk_${index}.ts\n`
 
       await fs.writeFile(path.join(__dirname, '/video/playlist.m3u8'), contents, options)
       index += 1
