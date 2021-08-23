@@ -39,6 +39,7 @@ const streamBuilder = async () => {
       await fs.stat(`${nextChunk}.mp4`)
       last = dur
       dur += await getVideoDurationInSeconds(`${nextChunk}.mp4`) - last
+      await exec('./darknet ')
       await exec(`ffmpeg -i ${nextChunk}.mp4 -c:v libx264 -c:a aac -b:a 160k -bsf:v h264_mp4toannexb -f mpegts -crf 32 ${nextChunk}.ts`)
 
       if (index === 0) {
