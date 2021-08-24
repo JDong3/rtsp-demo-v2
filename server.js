@@ -89,12 +89,12 @@ app.post('/load', (req, res) => {
       '-i', `${req.body.url}`,
       '-rtsp_transport', 'TCP',
       '-y',
-      '-s', '1920x1080',
+      '-s', '480x270',
       '-c:v', 'libx264',
       '-b:v', '800000',
-      '-filter:v', 'fps=3',
+      '-filter:v', 'fps=6',
       '-f', 'segment',
-      '-segment_time', '5',
+      '-segment_time', '15',
       path.join(__dirname, `/video/chunk_%d.mp4`),
     ])
     // 'ffmpeg -i rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov -rtsp_transport TCP -y -s 400x250 -c:v libx264 -b:v 800000 -f segment -segment_time 5 wow_%d.mp4'

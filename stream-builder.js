@@ -38,17 +38,17 @@ const streamBuilder = async () => {
     try {
       await fs.stat(`${nextChunk}.mp4`)
       last = dur
-      dur += await getVideoDurationInSeconds(`${nextChunk}.mp4`) - last
-      await exec('./darknet ')
-      await exec(`ffmpeg -i ${nextChunk}.mp4 -c:v libx264 -c:a aac -b:a 160k -bsf:v h264_mp4toannexb -f mpegts -crf 32 ${nextChunk}.ts`)
+      dur = await getVideoDurationInSeconds(`${nextChunk}.mp4`)
+      await exec(`./darknet detector demo cfg/coco.data cfg/yolov3-tiny-prn.cfg yolov3-tiny-prn.weights ${nextChunk}.mp4 -out_filename ${nextChunk}_yolo.mp4 -dont_show`)
+      await exec(`ffmpeg -i ${nextChunk}_yolo.mp4 -c:v libx264 -c:a aac -b:a 160k -bsf:v h264_mp4toannexb -f mpegts -crf 32 ${nextChunk}.ts`)
 
       if (index === 0) {
-        contents += '#EXTM3U\n' + '#EXT-X-VERSION:3\n' + '#EXT-X-TARGETDURATION:100\n'
+        contents += '#EXTM3U\n' + '#EXT-X-VERSION:3\n' + '#EXT-X-TARGETDURATION:25\n'
       }
       if (index >= 1) {
         contents += '#EXT-X-DISCONTINUITY\n'
       }
-      contents +=  `#EXTINF:${dur-last},\n` + `chunk_${index}.ts\n`
+      contents +=  `#EXTINF:${dur},\n` + `chunk_${index}.ts\n`
 
       await fs.writeFile(path.join(__dirname, '/video/playlist.m3u8'), contents, options)
       index += 1
