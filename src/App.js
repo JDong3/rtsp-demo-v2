@@ -46,6 +46,10 @@ const useStyles = makeStyles(() => (
       marginLeft: '1%',
       marginBottom: '10px',
     },
+
+    placeholder: {
+      background: 'grey',
+    },
   }
 ))
 
@@ -55,6 +59,8 @@ const App = () => {
   const [instances, setInstances] = useState(1)
   const [instancesField, setInstancesField] = useState('')
   const [urlField, setUrlField] = useState('')
+  const [stage, setStage] = useState('default') // default, loading, loaded
+
 
   const setTimeoutp = (time) => {
     return new Promise((resolve) => {
@@ -77,7 +83,6 @@ const App = () => {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body),
       })
-      console.log('loaded')
     }
 
     const pollVideo = async () => {
@@ -89,6 +94,7 @@ const App = () => {
           break
         }
       }
+      setStage('loaded')
 
       if (Hls.isSupported()) {
         var videos = document.getElementById('videos').childNodes;
@@ -103,12 +109,9 @@ const App = () => {
           })
         })
       }
-
-
-
-    }
-    console.log('clicked hello')
+    } 
     trigger()
+    setStage('loading')
     setInstances(parseInt(instancesField))
     pollVideo()
 
@@ -122,9 +125,11 @@ const App = () => {
     setUrlField(event.target.value)
   }
 
-  useEffect(() => {
-
-  }, [])
+  const renderPlaceholders = () => {
+    if (instances === 1) {
+      return <div className={clsx(classes.videoOne, classes.placeholder)}>hi</div>
+    }
+  }
 
   const renderVideos = () => {
     if (instances === 1) {
