@@ -141,9 +141,9 @@ const App = () => {
     <Container maxWidth="md">
       <Paper className={classes.paper}>
         <div>
-          <TextField className={classes.urlField} label="rtsp://" onChange={handleUrlField}>
+          <TextField className={classes.urlField} label="URL" onChange={handleUrlField}>
           </TextField>
-          <TextField className={clsx(classes.urlField, classes.fieldMargin)} label="instances" onChange={handleInstancesField}>
+          <TextField className={clsx(classes.urlField, classes.fieldMargin)} label="instances (1-8)" onChange={handleInstancesField}>
           </TextField>
           {failedCheck && <Error/>}
           <Button className={classes.button} disableElevation color="primary" variant="contained" onClick={handleLoad}>Load</Button>
