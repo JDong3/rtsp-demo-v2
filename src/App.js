@@ -6,12 +6,12 @@ import {
   Button,
 } from '@material-ui/core'
 import clsx from 'clsx'
+import Video from './Video.js'
+import Status from './Status.js'
 import {
-  useEffect,
   useState,
 } from 'react'
-import Hls from 'hls.js'
-
+import Error from './Error.js'
 
 const useStyles = makeStyles(() => (
   {
@@ -60,6 +60,7 @@ const App = () => {
   const [instancesField, setInstancesField] = useState('')
   const [urlField, setUrlField] = useState('')
   const [stage, setStage] = useState('default') // default, loading, loaded
+  const [failedCheck, setFailedCheck] = useState(false)
 
 
   const setTimeoutp = (time) => {
@@ -74,6 +75,20 @@ const App = () => {
     /**
      * when load is pressed, the server starts transcoding stuff, the instances variable is also set
      */
+
+    let maybeInstances = 1
+    try {
+      maybeInstances = parseInt(instancesField)
+    } catch (e) {
+      setFailedCheck(true)
+      return
+    }
+
+    if (maybeInstances < 1 || maybeInstances > 8) {
+      setFailedCheck(true)
+      return
+    }
+
     const trigger = async () => {
       let body = {
         url: urlField,
@@ -95,24 +110,11 @@ const App = () => {
         }
       }
       setStage('loaded')
-
-      if (Hls.isSupported()) {
-        var videos = document.getElementById('videos').childNodes;
-
-        videos.forEach(video => {
-          var hls = new Hls()
-          hls.attachMedia(video)
-          hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-            hls.loadSource('/video')
-            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-            })
-          })
-        })
-      }
-    } 
+    }
     trigger()
     setStage('loading')
-    setInstances(parseInt(instancesField))
+    setInstances(maybeInstances)
+    setFailedCheck(false)
     pollVideo()
 
   }
@@ -125,20 +127,12 @@ const App = () => {
     setUrlField(event.target.value)
   }
 
-  const renderPlaceholders = () => {
+  const renderVideo = () => {
     if (instances === 1) {
-      return <div className={clsx(classes.videoOne, classes.placeholder)}>hi</div>
-    }
-  }
-
-  const renderVideos = () => {
-    if (instances === 1) {
-      return <video id="video" className={classes.videoOne} autoPlay muted type="application/x-mpegURL">
-      </video>
+      return <Video id="video"/>
     } else {
       return Array(instances).fill(0).map((element, i) => (
-        <video className={classes.videoMulti} key={i} autoPlay muted type="application/x-mpegURL">
-        </video>
+        <Video multi id={`video_${i}`} key={i}/>
       ))
     }
   }
@@ -151,10 +145,14 @@ const App = () => {
           </TextField>
           <TextField className={clsx(classes.urlField, classes.fieldMargin)} label="instances" onChange={handleInstancesField}>
           </TextField>
+          {failedCheck && <Error/>}
           <Button className={classes.button} disableElevation color="primary" variant="contained" onClick={handleLoad}>Load</Button>
+          {stage === 'default' && <Status idle/>}
+          {stage === 'loading' && <Status loading/>}
+          {stage === 'loaded' && <Status loaded/>}
         </div>
         <div id="videos">
-          {renderVideos()}
+          {stage === 'loaded' && renderVideo()}
         </div>
 
       </Paper>
